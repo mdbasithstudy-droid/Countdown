@@ -1,0 +1,5 @@
+# Vercel and local environment settings
+.vercel/
+*.log
+.DS_Store
+.agents/
