@@ -24,14 +24,50 @@ let countdownState = {
     tagline: "Dive Beyond Limits"
 };
 
+// Low-end device detection
+const isPerformanceMode = (function() {
+    if (typeof navigator === "undefined" || typeof window === "undefined") return false;
+    // 1. Check device memory (<= 2 GB)
+    if (navigator.deviceMemory && navigator.deviceMemory <= 2) return true;
+    // 2. Check hardware concurrency (<= 4 cores)
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
+    // 3. Check user preference for reduced motion
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+    // 4. Mobile screen with low/medium cores
+    const isMobileScreen = window.innerWidth <= 768 || window.innerHeight <= 768;
+    if (isMobileScreen) {
+        if (!navigator.hardwareConcurrency || navigator.hardwareConcurrency <= 4) return true;
+    }
+    return false;
+})();
+
+// Automatically apply class to body once DOM is ready
+if (isPerformanceMode) {
+    if (document.body) {
+        document.body.classList.add("performance-mode");
+    } else {
+        document.addEventListener("DOMContentLoaded", () => {
+            document.body.classList.add("performance-mode");
+        });
+    }
+}
+
+// Cached DOM elements
+let cachedConnectionError = null;
+let cachedTaglineEl = null;
+let cachedCompletedOverlay = null;
+let cachedSegmentsList = null;
+
 // UI Connection status tracker
 function updateConnectionStatus(isConnected) {
-    const banner = document.getElementById("connectionError");
-    if (banner) {
+    if (!cachedConnectionError) {
+        cachedConnectionError = document.getElementById("connectionError");
+    }
+    if (cachedConnectionError) {
         if (isConnected) {
-            banner.classList.add("hidden");
+            cachedConnectionError.classList.add("hidden");
         } else {
-            banner.classList.remove("hidden");
+            cachedConnectionError.classList.remove("hidden");
         }
     }
 }
@@ -108,9 +144,6 @@ function startRealtimeSync() {
 
 // Call configuration setup and start sync listener
 ensureFirestoreConfig().then(startRealtimeSync);
-
-
-// Legacy local sync removed. Firebase real-time updates are used instead.
 
 // 2. LOADING SCREEN EMULATION
 const loaderWrapper = document.getElementById("loaderWrapper");
@@ -207,9 +240,9 @@ window.addEventListener("mouseleave", () => {
     mouse.y = null;
 });
 
-// Particles Configuration
+// Particles Configuration (Reduce count by > 80% under performance mode)
 const particles = [];
-const particleCount = 65;
+const particleCount = isPerformanceMode ? 12 : 65;
 
 class Particle {
     constructor() {
@@ -255,9 +288,9 @@ class Particle {
     }
 }
 
-// Generate Static PCB Traces
+// Generate Static PCB Traces (Reduce complexity under performance mode)
 const traces = [];
-const traceCount = 12;
+const traceCount = isPerformanceMode ? 2 : 12;
 
 class PCBTrace {
     constructor() {
@@ -350,19 +383,27 @@ class PCBTrace {
             ctx.lineTo(currentX, currentY);
             ctx.strokeStyle = "rgba(0, 229, 255, 0.6)";
             ctx.lineWidth = 2;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "#00E5FF";
+            if (!isPerformanceMode) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "#00E5FF";
+            }
             ctx.stroke();
-            ctx.shadowBlur = 0; // reset shadow
+            if (!isPerformanceMode) {
+                ctx.shadowBlur = 0; // reset shadow
+            }
 
             // Glowing moving head
             ctx.beginPath();
             ctx.arc(currentX, currentY, 3, 0, Math.PI * 2);
             ctx.fillStyle = "#F8FAFC";
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = "#00E5FF";
+            if (!isPerformanceMode) {
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "#00E5FF";
+            }
             ctx.fill();
-            ctx.shadowBlur = 0;
+            if (!isPerformanceMode) {
+                ctx.shadowBlur = 0;
+            }
         }
     }
 }
@@ -375,8 +416,17 @@ for (let i = 0; i < traceCount; i++) {
     traces.push(new PCBTrace());
 }
 
+// Viewport visibility flags for pausing off-screen animations
+let isCanvasVisible = true;
+let isCountdownVisible = true;
+
 // Background Animation Loop
 function animateBackground() {
+    if (!isCanvasVisible) {
+        requestAnimationFrame(animateBackground);
+        return;
+    }
+
     ctx.clearRect(0, 0, width, height);
 
     // Draw Traces
@@ -390,20 +440,23 @@ function animateBackground() {
         p.update();
         p.draw();
 
-        // Check distance to other particles and connect
-        for (let j = idx + 1; j < particles.length; j++) {
-            const p2 = particles[j];
-            const dx = p.x - p2.x;
-            const dy = p.y - p2.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+        // Connect lines only in Full Mode to maximize CPU performance
+        if (!isPerformanceMode) {
+            // Check distance to other particles and connect
+            for (let j = idx + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p.x - p2.x;
+                const dy = p.y - p2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 100) {
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = `rgba(0, 229, 255, ${0.12 * (1 - dist / 100)})`;
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
+                if (dist < 100) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = `rgba(0, 229, 255, ${0.12 * (1 - dist / 100)})`;
+                    ctx.lineWidth = 0.8;
+                    ctx.stroke();
+                }
             }
         }
     });
@@ -418,17 +471,21 @@ const segments = {
     seconds: { container: document.getElementById("digits-seconds") }
 };
 
-// Helper to create split-flap digit HTML structure
+// Helper to create split-flap digit HTML structure with cached numEl
 function createFlipDigit(value) {
     const digitEl = document.createElement("div");
     digitEl.className = "flip-digit";
     digitEl.innerHTML = `<span class="digit-num">${value}</span>`;
+    digitEl._numEl = digitEl.querySelector(".digit-num");
     return digitEl;
 }
 
 // Function to update a split-flap digit card with 3D folding animation
 function updateFlipDigit(digitEl, newValue) {
-    const numEl = digitEl.querySelector(".digit-num");
+    if (!digitEl._numEl) {
+        digitEl._numEl = digitEl.querySelector(".digit-num");
+    }
+    const numEl = digitEl._numEl;
     const oldValue = numEl.textContent;
     if (oldValue === newValue) return; // No change, keep still
 
@@ -498,37 +555,57 @@ function updateCountdown() {
         }
     }
 
-    // Dynamically apply stylesheet class overrides on body without reloading
-    if (document.body.className !== targetMode) {
-        document.body.className = targetMode;
+    // Dynamically apply stylesheet class overrides on body without overwriting performance-mode
+    const currentMode = document.body.classList.contains("blue-mode") ? "blue-mode" :
+                        document.body.classList.contains("warning-mode") ? "warning-mode" :
+                        document.body.classList.contains("critical-mode") ? "critical-mode" : "";
+    if (currentMode !== targetMode) {
+        if (currentMode) {
+            document.body.classList.remove(currentMode);
+        }
+        document.body.classList.add(targetMode);
     }
 
     // Tagline management
-    const taglineEl = document.querySelector(".tagline");
-    if (taglineEl) {
-        taglineEl.textContent = countdownState.tagline || "Dive Beyond Limits";
+    if (!cachedTaglineEl) {
+        cachedTaglineEl = document.querySelector(".tagline");
+    }
+    if (cachedTaglineEl) {
+        const targetTagline = countdownState.tagline || "Dive Beyond Limits";
+        if (cachedTaglineEl.textContent !== targetTagline) {
+            cachedTaglineEl.textContent = targetTagline;
+        }
     }
 
-    const completedOverlay = document.getElementById("completedOverlay");
-    const segmentsList = document.querySelectorAll(".countdown-segment, .countdown-divider");
+    if (!cachedCompletedOverlay) {
+        cachedCompletedOverlay = document.getElementById("completedOverlay");
+    }
+    if (!cachedSegmentsList) {
+        cachedSegmentsList = document.querySelectorAll(".countdown-segment, .countdown-divider");
+    }
 
     const isCompleted = distance <= 0 || countdownState.status === "completed";
 
     if (isCompleted) {
         // Hide segments
-        segmentsList.forEach(el => el.style.display = "none");
-        if (completedOverlay) {
-            completedOverlay.classList.add("active");
+        cachedSegmentsList.forEach(el => {
+            if (el.style.display !== "none") el.style.display = "none";
+        });
+        if (cachedCompletedOverlay && !cachedCompletedOverlay.classList.contains("active")) {
+            cachedCompletedOverlay.classList.add("active");
         }
-        if (document.body.className !== "critical-mode") {
-            document.body.className = "critical-mode";
+        if (!document.body.classList.contains("critical-mode")) {
+            document.body.classList.remove("blue-mode", "warning-mode");
+            document.body.classList.add("critical-mode");
         }
         return;
     } else {
         // Show segments
-        segmentsList.forEach(el => el.style.display = "");
-        if (completedOverlay) {
-            completedOverlay.classList.remove("active");
+        cachedSegmentsList.forEach(el => {
+            if (el.style.display !== "") el.style.display = "";
+        });
+        if (cachedCompletedOverlay && cachedCompletedOverlay.classList.contains("active")) {
+            cachedCompletedOverlay.classList.remove("active");
         }
     }
 
@@ -552,6 +629,36 @@ function updateCountdown() {
 
 // 5. INITIALIZE MAIN APP
 function initMainApp() {
+    // Cache DOM references
+    cachedTaglineEl = document.querySelector(".tagline");
+    cachedCompletedOverlay = document.getElementById("completedOverlay");
+    cachedSegmentsList = document.querySelectorAll(".countdown-segment, .countdown-divider");
+    cachedConnectionError = document.getElementById("connectionError");
+
+    // Setup intersection observer to pause off-screen animations
+    const countdownSection = document.querySelector(".countdown-section");
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.target === canvas) {
+                isCanvasVisible = entry.isIntersecting;
+            } else if (entry.target === countdownSection) {
+                isCountdownVisible = entry.isIntersecting;
+                if (entry.isIntersecting) {
+                    entry.target.classList.remove("off-screen");
+                } else {
+                    entry.target.classList.add("off-screen");
+                }
+            }
+        });
+    }, { threshold: 0.05 });
+
+    if (canvas) {
+        observer.observe(canvas);
+    }
+    if (countdownSection) {
+        observer.observe(countdownSection);
+    }
+
     // Start background simulation
     animateBackground();
 

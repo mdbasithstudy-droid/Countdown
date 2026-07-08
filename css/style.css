@@ -1379,6 +1379,81 @@ body {
     }
 }
 
+/* PERFORMANCE MODE OVERRIDES & GPU OPTIMIZATIONS */
+.flip-digit, .digit-num {
+    will-change: transform, opacity;
+}
+
+.reactor-ring {
+    will-change: transform;
+}
+
+/* Pause animations when off-screen */
+.countdown-section.off-screen .reactor-ring,
+.countdown-section.off-screen .hud-animated-border,
+.countdown-section.off-screen .energy-streak,
+.countdown-section.off-screen .countdown-divider {
+    animation-play-state: paused !important;
+}
+
+/* Adaptive Performance Mode settings */
+.performance-mode {
+    --glow-cyan: 0 0 8px rgba(0, 229, 255, 0.15) !important;
+    --glow-blue: 0 0 8px rgba(0, 136, 255, 0.15) !important;
+    --hud-border-glow: rgba(0, 229, 255, 0.1) !important;
+}
+
+.performance-mode .hud-glass-panel,
+.performance-mode .glass-card,
+.performance-mode .footer-bar,
+.performance-mode .logo-wrapper,
+.performance-mode .loader-logo-container {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+.performance-mode .hud-panel-container {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+    animation: floating-glass 12s ease-in-out infinite, var(--pulse-animation) !important; /* slow down float */
+}
+
+.performance-mode .glass-card:hover {
+    box-shadow: 0 0 10px rgba(0, 136, 255, 0.1) !important;
+    transform: none !important; /* avoid paint invalidation of scaled layers */
+}
+
+/* Slow down reactor rings to save layout updates */
+.performance-mode .reactor-ring.outer {
+    animation-duration: 60s !important;
+}
+.performance-mode .reactor-ring.middle {
+    animation-duration: 45s !important;
+}
+.performance-mode .reactor-ring.inner {
+    animation-duration: 30s !important;
+}
+.performance-mode .reactor-ring.core {
+    animation: none !important; /* static glow core */
+}
+
+/* Disable heavy extra background animations */
+.performance-mode .hud-circle-1,
+.performance-mode .hud-circle-2 {
+    display: none !important;
+}
+
+/* Simplify complex conic animated border and streaks */
+.performance-mode .hud-animated-border {
+    animation: none !important;
+    background: var(--hud-border-color) !important;
+    opacity: 0.35 !important;
+}
+
+.performance-mode .energy-streak {
+    display: none !important;
+}
+
+
 
 
 
