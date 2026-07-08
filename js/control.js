@@ -342,6 +342,173 @@ set24hBtn.addEventListener("click", async () => {
     }
 });
 
+// Action: Quick Countdown Buttons
+document.querySelectorAll(".quick-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        if (isPlaceholder) return;
+        
+        let msToAdd = 0;
+        if (btn.dataset.hours) {
+            msToAdd = Number(btn.dataset.hours) * 60 * 60 * 1000;
+        } else if (btn.dataset.mins) {
+            msToAdd = Number(btn.dataset.mins) * 60 * 1000;
+        } else {
+            return;
+        }
+        
+        const now = new Date();
+        const targetTime = new Date(now.getTime() + msToAdd);
+        
+        const year = targetTime.getFullYear();
+        const month = targetTime.getMonth() + 1;
+        const day = targetTime.getDate();
+        const hour = targetTime.getHours();
+        const minute = targetTime.getMinutes();
+        const second = targetTime.getSeconds();
+        
+        try {
+            const configDocRef = doc(db, "countdown", "config");
+            await updateDoc(configDocRef, {
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                status: "running",
+                paused: false,
+                pausedRemaining: 0,
+                updatedAt: serverTimestamp()
+            });
+            logMessage(`Countdown target increased by ${btn.textContent.trim()} from now (${year}-${month}-${day} ${hour}:${minute}:${second}).`, "success");
+        } catch (e) {
+            logMessage("Action failed: " + e.message, "danger");
+        }
+    });
+});
+
+// Action: Quick Action RESET
+const quickResetBtn = document.getElementById("quickResetBtn");
+if (quickResetBtn) {
+    quickResetBtn.addEventListener("click", async () => {
+        if (isPlaceholder) return;
+        try {
+            const configDocRef = doc(db, "countdown", "config");
+            await updateDoc(configDocRef, {
+                year: 2026,
+                month: 7,
+                day: 9,
+                hour: 9,
+                minute: 0,
+                second: 0,
+                status: "running",
+                paused: false,
+                pausedRemaining: 0,
+                colorMode: "auto",
+                updatedAt: serverTimestamp()
+            });
+            logMessage("Countdown reset to default values (July 9, 2026 09:00:00).", "success");
+        } catch (e) {
+            logMessage("Action failed: " + e.message, "danger");
+        }
+    });
+}
+
+// Action: System Status controls
+document.querySelectorAll(".status-control-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        if (isPlaceholder) return;
+        if (!activeConfig) return;
+        
+        const configDocRef = doc(db, "countdown", "config");
+        
+        if (btn.dataset.status === "running") {
+            // Check if it was paused to calculate resumed date
+            if (activeConfig.paused) {
+                const now = new Date().getTime();
+                const newTargetTime = now + (activeConfig.pausedRemaining || 0);
+                const tzOffset = 5.5 * 60 * 60 * 1000;
+                const offsetDate = new Date(newTargetTime + tzOffset);
+                
+                const year = offsetDate.getUTCFullYear();
+                const month = offsetDate.getUTCMonth() + 1;
+                const day = offsetDate.getUTCDate();
+                const hour = offsetDate.getUTCHours();
+                const minute = offsetDate.getUTCMinutes();
+                const second = offsetDate.getUTCSeconds();
+                
+                try {
+                    await updateDoc(configDocRef, {
+                        year,
+                        month,
+                        day,
+                        hour,
+                        minute,
+                        second,
+                        status: "running",
+                        paused: false,
+                        pausedRemaining: 0,
+                        updatedAt: serverTimestamp()
+                    });
+                    logMessage("System Status set to RUNNING (resumed countdown).", "success");
+                } catch (e) {
+                    logMessage("Action failed: " + e.message, "danger");
+                }
+            } else {
+                try {
+                    await updateDoc(configDocRef, {
+                        status: "running",
+                        paused: false,
+                        pausedRemaining: 0,
+                        updatedAt: serverTimestamp()
+                    });
+                    logMessage("System Status set to RUNNING.", "success");
+                } catch (e) {
+                    logMessage("Action failed: " + e.message, "danger");
+                }
+            }
+        } else if (btn.dataset.status === "paused") {
+            const targetTime = new Date(
+                `${activeConfig.year}-${String(activeConfig.month).padStart(2, '0')}-${String(activeConfig.day).padStart(2, '0')}T${String(activeConfig.hour).padStart(2, '0')}:${String(activeConfig.minute).padStart(2, '0')}:${String(activeConfig.second).padStart(2, '0')}+05:30`
+            ).getTime();
+            const now = new Date().getTime();
+            const pausedRemaining = Math.max(0, targetTime - now);
+            
+            try {
+                await updateDoc(configDocRef, {
+                    status: "paused",
+                    paused: true,
+                    pausedRemaining: pausedRemaining,
+                    updatedAt: serverTimestamp()
+                });
+                logMessage("System Status set to PAUSED.", "warn");
+            } catch (e) {
+                logMessage("Action failed: " + e.message, "danger");
+            }
+        } else if (btn.dataset.status === "completed") {
+            try {
+                await updateDoc(configDocRef, {
+                    status: "completed",
+                    updatedAt: serverTimestamp()
+                });
+                logMessage("System Status set to FINISHED.", "danger");
+            } catch (e) {
+                logMessage("Action failed: " + e.message, "danger");
+            }
+        } else if (btn.dataset.color === "auto") {
+            try {
+                await updateDoc(configDocRef, {
+                    colorMode: "auto",
+                    updatedAt: serverTimestamp()
+                });
+                logMessage("System Status set to AUTO COLOR.", "success");
+            } catch (e) {
+                logMessage("Action failed: " + e.message, "danger");
+            }
+        }
+    });
+});
+
 // Helper duration formatting
 function formatDuration(ms) {
     if (ms <= 0) return "00:00:00";

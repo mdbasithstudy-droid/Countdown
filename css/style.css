@@ -1227,6 +1227,158 @@ body {
     animation: status-pulse 1.5s infinite;
 }
 
+/* Quick Actions Grid (Desktop Default) */
+.quick-countdown-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+.quick-countdown-grid .admin-btn {
+    flex: 1 0 auto;
+    min-width: 95px;
+    padding: 10px;
+    font-size: 0.85rem;
+}
+
+/* System Status Grid (Desktop Default) */
+.system-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+.system-status-grid .admin-btn {
+    padding: 12px;
+}
+
+/* RESPONSIVE MOBILE OPTIMIZATION (< 768px) */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 1rem 0.5rem 2rem !important;
+        width: 95% !important;
+        margin: 0 auto;
+    }
+    
+    .admin-dashboard {
+        padding: 15px !important;
+        border-radius: 16px !important;
+    }
+    
+    .admin-grid {
+        gap: 15px !important;
+    }
+    
+    .admin-panel-card {
+        padding: 14px !important;
+        margin-top: 15px !important;
+    }
+    
+    .admin-panel-card h2 {
+        font-size: 1rem !important;
+        margin-bottom: 12px !important;
+    }
+    
+    /* Header optimization */
+    header.hero-section {
+        margin-bottom: 0.8rem !important;
+    }
+    
+    header.hero-section .logo-wrapper {
+        width: 200px !important;
+        margin-bottom: 0.6rem !important;
+        padding: 6px 12px !important;
+    }
+    
+    header.hero-section .tagline {
+        font-size: 0.8rem !important;
+        letter-spacing: 3px !important;
+    }
+    
+    /* System Controller title and status badge layout */
+    .dashboard-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .dashboard-header h1 {
+        font-size: 1.2rem !important;
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+        margin: 0 !important;
+    }
+    
+    .admin-status-badge {
+        position: static !important;
+        align-self: flex-start !important;
+        margin-top: 4px !important;
+        padding: 4px 10px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Forms & inputs */
+    .admin-form-group {
+        margin-bottom: 10px !important;
+    }
+    
+    .admin-form-group label {
+        margin-bottom: 4px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .admin-date-picker, .admin-time-picker {
+        padding: 8px 10px !important;
+        font-size: 0.9rem !important;
+        height: 38px !important;
+    }
+    
+    .admin-btn {
+        padding: 10px 14px !important;
+        font-size: 0.85rem !important;
+        min-height: 40px !important;
+    }
+    
+    /* Quick Actions (Mobile) - 2-column grid */
+    .quick-countdown-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .quick-countdown-grid .admin-btn {
+        min-width: unset !important;
+        font-size: 0.85rem !important;
+        padding: 8px !important;
+        margin-top: 0 !important;
+    }
+    
+    /* System Status (Mobile) - 2-column grid */
+    .system-status-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+    
+    .system-status-grid .admin-btn {
+        font-size: 0.85rem !important;
+        padding: 8px !important;
+        margin-top: 0 !important;
+    }
+    
+    .admin-log-box {
+        margin-top: 15px !important;
+        height: 90px !important;
+        padding: 10px !important;
+        font-size: 0.75rem !important;
+    }
+}
+
 
 
 

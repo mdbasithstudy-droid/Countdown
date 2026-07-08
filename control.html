@@ -91,6 +91,34 @@
                 </div>
             </div>
 
+            <!-- QUICK ACTIONS SECTION -->
+            <div class="admin-panel-card quick-countdown-card" style="margin-top: 25px;">
+                <h2>Quick Countdown</h2>
+                <div class="quick-countdown-grid">
+                    <button class="admin-btn quick-btn" data-hours="24">+24 Hours</button>
+                    <button class="admin-btn quick-btn" data-hours="12">+12 Hours</button>
+                    <button class="admin-btn quick-btn" data-hours="6">+6 Hours</button>
+                    <button class="admin-btn quick-btn" data-hours="2">+2 Hours</button>
+                    <button class="admin-btn quick-btn" data-hours="1">+1 Hour</button>
+                    <button class="admin-btn quick-btn" data-mins="30">+30 Minutes</button>
+                    <button class="admin-btn quick-btn" data-mins="15">+15 Minutes</button>
+                    <button class="admin-btn quick-btn" data-mins="10">+10 Minutes</button>
+                    <button class="admin-btn quick-btn" data-mins="5">+5 Minutes</button>
+                    <button class="admin-btn quick-btn reset-quick-btn" id="quickResetBtn" style="background: rgba(255, 0, 85, 0.1); border-color: #FF0055; color: #FF0055;">RESET</button>
+                </div>
+            </div>
+
+            <!-- SYSTEM STATUS SECTION -->
+            <div class="admin-panel-card system-status-card" style="margin-top: 25px;">
+                <h2>System Status</h2>
+                <div class="system-status-grid">
+                    <button class="admin-btn status-control-btn" data-status="running">RUNNING</button>
+                    <button class="admin-btn status-control-btn" data-status="paused" style="border-color: #FF9F00; color: #FF9F00; background: rgba(255, 159, 0, 0.1);">PAUSED</button>
+                    <button class="admin-btn status-control-btn" data-status="completed" style="border-color: #FF0055; color: #FF0055; background: rgba(255, 0, 85, 0.1);">FINISHED</button>
+                    <button class="admin-btn status-control-btn" data-color="auto" style="border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0, 229, 255, 0.1);">AUTO COLOR</button>
+                </div>
+            </div>
+
             <!-- EVENT STATUS LOG BOX -->
             <div class="admin-log-box" id="adminLogBox">
                 <div class="admin-log-entry success">> Control console initialized. Connecting to database...</div>
