@@ -1,0 +1,285 @@
+// control.js
+import { 
+    db, doc, getDoc, updateDoc, onSnapshot, isPlaceholder 
+} from "./firebase.js";
+
+// --- BACKGROUND CANVAS INTERACTIVE SYSTEM (Copy of script.js background logic) ---
+const canvas = document.getElementById("bg-canvas");
+const ctx = canvas.getContext("2d");
+
+let width = (canvas.width = window.innerWidth);
+let height = (canvas.height = window.innerHeight);
+
+window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+});
+
+const particles = [];
+const particleCount = 45;
+
+class Particle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = Math.random() * 2 + 1;
+        this.color = Math.random() > 0.5 ? "rgba(0, 229, 255, 0.4)" : "rgba(0, 136, 255, 0.3)";
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+}
+
+for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+}
+
+function animateBackground() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach((p, idx) => {
+        p.update();
+        p.draw();
+        for (let j = idx + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dx = p.x - p2.x;
+            const dy = p.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = `rgba(0, 229, 255, ${0.1 * (1 - dist / 120)})`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+            }
+        }
+    });
+    requestAnimationFrame(animateBackground);
+}
+animateBackground();
+
+// --- LOGGING SYSTEM ---
+const logBox = document.getElementById("adminLogBox");
+function logMessage(text, type = "info") {
+    const entry = document.createElement("div");
+    entry.className = `admin-log-entry ${type}`;
+    entry.innerHTML = `[${new Date().toLocaleTimeString()}] > ${text}`;
+    logBox.appendChild(entry);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+if (isPlaceholder) {
+    logMessage("CRITICAL: Firebase SDK is using placeholder credentials! Fill credentials in firebase.js.", "danger");
+}
+
+// --- FIRESTORE REMOTE CONTROLLER ---
+const countdownDateInput = document.getElementById("countdownDate");
+const countdownTimeInput = document.getElementById("countdownTime");
+const statusBadge = document.getElementById("statusBadge");
+
+const pauseBtn = document.getElementById("pauseBtn");
+const resumeBtn = document.getElementById("resumeBtn");
+const resetBtn = document.getElementById("resetBtn");
+const saveChangesBtn = document.getElementById("saveChangesBtn");
+
+let activeConfig = null;
+
+function setupDashboardListener() {
+    if (isPlaceholder) return;
+    const configDocRef = doc(db, "countdown", "config");
+    onSnapshot(configDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+            activeConfig = snapshot.data();
+            populateInputs(activeConfig);
+            updateBadgeUI(activeConfig.status);
+            logMessage("Real-time countdown configuration synchronized.", "success");
+        } else {
+            logMessage("Config document not found. Initializing with defaults...", "warn");
+            initializeDefaultDoc();
+        }
+    }, (error) => {
+        console.error("Firestore error:", error);
+        logMessage("Firestore Connection Error: " + error.message, "danger");
+    });
+}
+
+async function initializeDefaultDoc() {
+    const defaultDoc = {
+        year: 2026,
+        month: 7,
+        day: 9,
+        hour: 9,
+        minute: 0,
+        second: 0,
+        status: "running",
+        colorMode: "auto",
+        pausedRemaining: 0,
+        tagline: "Dive Beyond Limits"
+    };
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, defaultDoc);
+        logMessage("Default document initialized successfully.", "success");
+    } catch (e) {
+        logMessage("Initialization failed: " + e.message, "danger");
+    }
+}
+
+function populateInputs(config) {
+    const pad = (val) => String(val).padStart(2, "0");
+    countdownDateInput.value = `${config.year}-${pad(config.month)}-${pad(config.day)}`;
+    countdownTimeInput.value = `${pad(config.hour)}:${pad(config.minute)}:${pad(config.second)}`;
+}
+
+function updateBadgeUI(status) {
+    statusBadge.textContent = status;
+    statusBadge.className = "admin-status-badge";
+    if (status === "paused") {
+        statusBadge.classList.add("paused");
+    } else if (status === "completed") {
+        statusBadge.classList.add("completed");
+    }
+}
+
+// Action: Save Changes
+saveChangesBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    const dateVal = countdownDateInput.value;
+    const timeVal = countdownTimeInput.value;
+    
+    if (!dateVal || !timeVal) {
+        logMessage("Failed to save: Date and Time are required.", "danger");
+        return;
+    }
+
+    const [year, month, day] = dateVal.split("-").map(Number);
+    const [hour, minute, second] = timeVal.split(":").map(Number);
+
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second: second || 0
+        });
+        logMessage("Countdown configuration saved.", "success");
+    } catch (e) {
+        logMessage("Failed to save config: " + e.message, "danger");
+    }
+});
+
+// Action: Pause Countdown
+pauseBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    if (!activeConfig) return;
+
+    const targetTime = new Date(
+        `${activeConfig.year}-${String(activeConfig.month).padStart(2, '0')}-${String(activeConfig.day).padStart(2, '0')}T${String(activeConfig.hour).padStart(2, '0')}:${String(activeConfig.minute).padStart(2, '0')}:${String(activeConfig.second).padStart(2, '0')}+05:30`
+    ).getTime();
+    
+    const now = new Date().getTime();
+    const pausedRemaining = Math.max(0, targetTime - now);
+
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            status: "paused",
+            pausedRemaining: pausedRemaining
+        });
+        logMessage(`Countdown paused. Frozen at: ${formatDuration(pausedRemaining)}`, "warn");
+    } catch (e) {
+        logMessage("Action failed: " + e.message, "danger");
+    }
+});
+
+// Action: Resume Countdown
+resumeBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    if (!activeConfig || activeConfig.status !== "paused") {
+        logMessage("Cannot resume: System is not paused.", "warn");
+        return;
+    }
+
+    const now = new Date().getTime();
+    const newTargetTime = now + activeConfig.pausedRemaining;
+
+    // Calculate details in +05:30 offset
+    const tzOffset = 5.5 * 60 * 60 * 1000;
+    const offsetDate = new Date(newTargetTime + tzOffset);
+
+    const year = offsetDate.getUTCFullYear();
+    const month = offsetDate.getUTCMonth() + 1;
+    const day = offsetDate.getUTCDate();
+    const hour = offsetDate.getUTCHours();
+    const minute = offsetDate.getUTCMinutes();
+    const second = offsetDate.getUTCSeconds();
+
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            status: "running",
+            pausedRemaining: 0
+        });
+        logMessage("Countdown resumed.", "success");
+    } catch (e) {
+        logMessage("Action failed: " + e.message, "danger");
+    }
+});
+
+// Action: Reset Countdown
+resetBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            year: 2026,
+            month: 7,
+            day: 9,
+            hour: 9,
+            minute: 0,
+            second: 0,
+            status: "running",
+            pausedRemaining: 0,
+            colorMode: "auto"
+        });
+        logMessage("Countdown reset to default values (July 9, 2026 09:00:00).", "success");
+    } catch (e) {
+        logMessage("Action failed: " + e.message, "danger");
+    }
+});
+
+// Helper duration formatting
+function formatDuration(ms) {
+    if (ms <= 0) return "00:00:00";
+    const totalSecs = Math.floor(ms / 1000);
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+// Start setup
+setupDashboardListener();

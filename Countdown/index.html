@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROBOCHIPX | 24-Hour Robotics & VLSI Innovation Challenge</title>
+    <meta name="description" content="Official countdown portal for ROBOCHIPX: The ultimate 24-Hour National level Robotics & VLSI Innovation Challenge. July 9-10, 2026.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/dseg7-classic@5.2.5/index.min.css" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+    <!-- STARTUP LOADING SCREEN -->
+    <div class="loader-wrapper" id="loaderWrapper">
+        <div class="loader-content">
+            <div class="loader-logo-container">
+                <img src="assets/logo.png" alt="ROBOCHIPX Logo" class="loader-logo">
+                <div class="loader-logo-scan"></div>
+            </div>
+            
+            <div class="loader-ring-container">
+                <svg class="loader-ring" viewBox="0 0 100 100">
+                    <circle class="loader-ring-bg" cx="50" cy="50" r="45"></circle>
+                    <circle class="loader-ring-fill" cx="50" cy="50" r="45" id="loaderRingFill"></circle>
+                </svg>
+                <div class="loader-percentage" id="loaderPercentage">00%</div>
+            </div>
+            
+            <div class="loader-terminal">
+                <div class="terminal-line" id="terminalLine">INITIALIZING AI SYSTEM...</div>
+                <div class="terminal-status" id="terminalStatus">[PENDING]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANIMATED BACKGROUNDS -->
+    <div class="bg-container">
+        <!-- Interactive Canvas (PCB Traces, Floating Particles, Small Nodes) -->
+        <canvas id="bg-canvas"></canvas>
+        
+        <!-- Hexagonal Grid Overlay -->
+        <div class="hex-grid"></div>
+        
+        <!-- Cinematic Scanlines -->
+        <div class="scanlines"></div>
+        
+        <!-- Floating HUD Overlay elements -->
+        <div class="hud-circle hud-circle-1"></div>
+        <div class="hud-circle hud-circle-2"></div>
+        <div class="hud-corner top-left"></div>
+        <div class="hud-corner top-right"></div>
+        <div class="hud-corner bottom-left"></div>
+        <div class="hud-corner bottom-right"></div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="app-container hidden" id="appContainer">
+        
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="logo-wrapper">
+                <img src="assets/logo.png" alt="ROBOCHIPX Logo" class="main-logo">
+            </div>
+            <p class="tagline">Dive Beyond Limits</p>
+        </section>
+
+        <!-- COUNTDOWN TIMER SECTION -->
+        <section class="countdown-section">
+            <!-- Rotating Holographic AI Reactor Ring Behind Countdown -->
+            <div class="reactor-ring-wrapper">
+                <div class="reactor-ring outer"></div>
+                <div class="reactor-ring middle"></div>
+                <div class="reactor-ring inner"></div>
+                <div class="reactor-ring core"></div>
+            </div>
+            <!-- Futuristic HUD panel container -->
+            <div class="hud-panel-container">
+                <!-- Border animation element -->
+                <div class="hud-animated-border"></div>
+                <!-- Energy Gap with traveling particles -->
+                <div class="hud-energy-gap">
+                    <div class="energy-streak streak-1"></div>
+                    <div class="energy-streak streak-2"></div>
+                </div>
+                
+                <!-- Inner Glass Panel -->
+                <div class="hud-glass-panel">
+                    <!-- HOURS SEGMENT -->
+                    <div class="countdown-segment" id="segment-hours">
+                        <div class="segment-digits" id="digits-hours">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        <div class="segment-label">HOURS</div>
+                    </div>
+                    
+                    <div class="countdown-divider">:</div>
+                    
+                    <!-- MINUTES SEGMENT -->
+                    <div class="countdown-segment" id="segment-minutes">
+                        <div class="segment-digits" id="digits-minutes">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        <div class="segment-label">MINUTES</div>
+                    </div>
+                    
+                    <div class="countdown-divider">:</div>
+                    
+                    <!-- SECONDS SEGMENT -->
+                    <div class="countdown-segment" id="segment-seconds">
+                        <div class="segment-digits" id="digits-seconds">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        <div class="segment-label">SECONDS</div>
+                    </div>
+
+                    <!-- COMPLETED OVERLAY -->
+                    <div class="completed-overlay" id="completedOverlay">
+                        HACKATHON HAS BEGUN
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="js/script.js"></script>
+</body>
+</html>

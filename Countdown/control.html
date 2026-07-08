@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROBOCHIPX | Cybernetic Remote Control</title>
+    <meta name="description" content="Remote control terminal for the ROBOCHIPX live countdown.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ANIMATED BACKGROUNDS -->
+    <div class="bg-container">
+        <!-- Interactive Canvas -->
+        <canvas id="bg-canvas"></canvas>
+        <!-- Hexagonal Grid Overlay -->
+        <div class="hex-grid"></div>
+        <!-- Cinematic Scanlines -->
+        <div class="scanlines"></div>
+        
+        <!-- HUD Corners -->
+        <div class="hud-corner top-left"></div>
+        <div class="hud-corner top-right"></div>
+        <div class="hud-corner bottom-left"></div>
+        <div class="hud-corner bottom-right"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="app-container">
+        
+        <!-- LOGO HEADER -->
+        <header class="hero-section" style="margin-bottom: 1.5rem;">
+            <div class="logo-wrapper" style="width: 250px;">
+                <img src="assets/logo.png" alt="ROBOCHIPX Logo" class="main-logo">
+            </div>
+            <p class="tagline">Remote Control Terminal</p>
+        </header>
+
+        <!-- CONTROL PANEL -->
+        <main class="admin-dashboard" id="controlDashboard">
+            <!-- Inner HUD Corners -->
+            <div class="hud-corner top-left" style="width: 20px; height: 20px;"></div>
+            <div class="hud-corner top-right" style="width: 20px; height: 20px;"></div>
+            <div class="hud-corner bottom-left" style="width: 20px; height: 20px;"></div>
+            <div class="hud-corner bottom-right" style="width: 20px; height: 20px;"></div>
+
+            <div class="dashboard-header">
+                <h1>
+                    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background: var(--neon-cyan); box-shadow: var(--glow-cyan);"></span>
+                    SYSTEM CONTROLLER
+                </h1>
+                <div id="statusBadge" class="admin-status-badge">SYNCING...</div>
+            </div>
+
+            <div class="admin-grid">
+                <!-- LEFT COLUMN: TIME & DATE CONTROLS -->
+                <div class="admin-panel-card">
+                    <h2>Target Configuration</h2>
+                    
+                    <div class="admin-form-group">
+                        <label for="countdownDate">Target Date</label>
+                        <input type="date" id="countdownDate" class="admin-date-picker">
+                    </div>
+                    
+                    <div class="admin-form-group">
+                        <label for="countdownTime">Target Time</label>
+                        <input type="time" id="countdownTime" class="admin-time-picker" step="1">
+                    </div>
+
+                    <button id="saveChangesBtn" class="admin-btn">Save Changes</button>
+                </div>
+
+                <!-- RIGHT COLUMN: STATE DIRECTIVES -->
+                <div class="admin-panel-card">
+                    <h2>System Directives</h2>
+                    
+                    <label style="display: block; margin-bottom: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; color: var(--text-gray);">Execution State</label>
+                    <div class="admin-btn-grid" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 15px;">
+                        <button id="pauseBtn" class="admin-btn" style="background: rgba(255, 159, 0, 0.1); border-color: #FF9F00; color: #FF9F00;">Pause</button>
+                        <button id="resumeBtn" class="admin-btn" style="background: rgba(0, 229, 255, 0.1); border-color: var(--neon-cyan);">Resume</button>
+                        <button id="resetBtn" class="admin-btn" style="background: rgba(255, 0, 85, 0.1); border-color: #FF0055; color: #FF0055; grid-column: span 2;">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EVENT STATUS LOG BOX -->
+            <div class="admin-log-box" id="adminLogBox">
+                <div class="admin-log-entry success">> Control console initialized. Connecting to database...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/control.js"></script>
+</body>
+</html>
