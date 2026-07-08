@@ -24,19 +24,24 @@ let countdownState = {
     tagline: "Dive Beyond Limits"
 };
 
-// Low-end device detection
+// Low-end device detection (Aggressively targets 2GB-4GB RAM devices and mobile phones)
 const isPerformanceMode = (function() {
     if (typeof navigator === "undefined" || typeof window === "undefined") return false;
-    // 1. Check device memory (<= 2 GB)
-    if (navigator.deviceMemory && navigator.deviceMemory <= 2) return true;
-    // 2. Check hardware concurrency (<= 4 cores)
-    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
-    // 3. Check user preference for reduced motion
+    // 1. Check user preference for reduced motion
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-    // 4. Mobile screen with low/medium cores
-    const isMobileScreen = window.innerWidth <= 768 || window.innerHeight <= 768;
-    if (isMobileScreen) {
-        if (!navigator.hardwareConcurrency || navigator.hardwareConcurrency <= 4) return true;
+    // 2. Check device memory (<= 4 GB covers 2GB-4GB RAM phones as requested)
+    if (navigator.deviceMemory && navigator.deviceMemory <= 4) return true;
+    // 3. Check hardware concurrency (<= 4 cores is typical for low-to-mid range processors)
+    if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
+    // 4. Check User Agent for Android/iOS mobile devices to aggressively optimize phones
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+    const isMobileScreen = window.innerWidth <= 1024 || window.innerHeight <= 1024;
+    if (isMobileDevice || isMobileScreen) {
+        // Automatically enable on mobile unless it's an exceptional high-end phone
+        const isHighEndMobile = (navigator.deviceMemory && navigator.deviceMemory > 4) && 
+                                (navigator.hardwareConcurrency && navigator.hardwareConcurrency > 6);
+        if (!isHighEndMobile) return true;
     }
     return false;
 })();

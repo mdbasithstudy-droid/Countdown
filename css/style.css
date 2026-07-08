@@ -1396,11 +1396,12 @@ body {
     animation-play-state: paused !important;
 }
 
-/* Adaptive Performance Mode settings */
+/* Performance Mode overrides & optimizations */
 .performance-mode {
     --glow-cyan: 0 0 8px rgba(0, 229, 255, 0.15) !important;
     --glow-blue: 0 0 8px rgba(0, 136, 255, 0.15) !important;
     --hud-border-glow: rgba(0, 229, 255, 0.1) !important;
+    --pulse-animation: critical-heartbeat-perf 1.5s infinite alternate ease-in-out !important;
 }
 
 .performance-mode .hud-glass-panel,
@@ -1414,7 +1415,28 @@ body {
 
 .performance-mode .hud-panel-container {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
-    animation: floating-glass 12s ease-in-out infinite, var(--pulse-animation) !important; /* slow down float */
+    animation: var(--pulse-animation) !important; /* Disable floating-glass animation to stop continuous repaint of backdrop filter */
+    transform: none;
+}
+
+.performance-mode .logo-wrapper {
+    animation: none !important; /* Disable floating animation of logo to avoid backdrop filter repaints */
+    transform: none !important;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.15) !important;
+}
+
+.performance-mode .glitch-title {
+    animation: none !important; /* Stop text shadow pulses */
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.45) !important;
+}
+
+.performance-mode .countdown-divider {
+    animation: pulse-colon-perf 2s infinite !important; /* Disable text shadow pulsing, only animate opacity */
+}
+
+.performance-mode .pulse-dot {
+    animation: status-pulse-perf 2s infinite !important; /* Stop box shadow pulses */
+    box-shadow: 0 0 6px var(--neon-cyan) !important;
 }
 
 .performance-mode .glass-card:hover {
@@ -1452,6 +1474,24 @@ body {
 .performance-mode .energy-streak {
     display: none !important;
 }
+
+/* GPU-friendly Performance Mode Animations */
+@keyframes critical-heartbeat-perf {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.015); }
+}
+
+@keyframes pulse-colon-perf {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+@keyframes status-pulse-perf {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(0.8); opacity: 0.5; }
+}
+
 
 
 
