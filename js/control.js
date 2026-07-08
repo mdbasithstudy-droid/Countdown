@@ -1,6 +1,6 @@
 // control.js
 import { 
-    db, doc, getDoc, updateDoc, onSnapshot, isPlaceholder 
+    db, doc, getDoc, updateDoc, setDoc, serverTimestamp, onSnapshot, isPlaceholder 
 } from "./firebase.js";
 
 // --- BACKGROUND CANVAS INTERACTIVE SYSTEM (Copy of script.js background logic) ---
@@ -86,6 +86,28 @@ if (isPlaceholder) {
     logMessage("CRITICAL: Firebase SDK is using placeholder credentials! Fill credentials in firebase.js.", "danger");
 }
 
+// UI Connection status tracker
+function updateConnectionStatus(isConnected) {
+    const banner = document.getElementById("connectionError");
+    if (banner) {
+        if (isConnected) {
+            banner.classList.add("hidden");
+        } else {
+            banner.classList.remove("hidden");
+        }
+    }
+}
+
+// Browser connection status listeners
+window.addEventListener("online", () => {
+    updateConnectionStatus(true);
+    logMessage("Internet connection restored.", "success");
+});
+window.addEventListener("offline", () => {
+    updateConnectionStatus(false);
+    logMessage("Internet connection lost.", "danger");
+});
+
 // --- FIRESTORE REMOTE CONTROLLER ---
 const countdownDateInput = document.getElementById("countdownDate");
 const countdownTimeInput = document.getElementById("countdownTime");
@@ -95,6 +117,7 @@ const pauseBtn = document.getElementById("pauseBtn");
 const resumeBtn = document.getElementById("resumeBtn");
 const resetBtn = document.getElementById("resetBtn");
 const saveChangesBtn = document.getElementById("saveChangesBtn");
+const set24hBtn = document.getElementById("set24hBtn");
 
 let activeConfig = null;
 
@@ -102,6 +125,7 @@ function setupDashboardListener() {
     if (isPlaceholder) return;
     const configDocRef = doc(db, "countdown", "config");
     onSnapshot(configDocRef, (snapshot) => {
+        updateConnectionStatus(true);
         if (snapshot.exists()) {
             activeConfig = snapshot.data();
             populateInputs(activeConfig);
@@ -114,6 +138,7 @@ function setupDashboardListener() {
     }, (error) => {
         console.error("Firestore error:", error);
         logMessage("Firestore Connection Error: " + error.message, "danger");
+        updateConnectionStatus(false);
     });
 }
 
@@ -127,15 +152,18 @@ async function initializeDefaultDoc() {
         second: 0,
         status: "running",
         colorMode: "auto",
-        pausedRemaining: 0,
-        tagline: "Dive Beyond Limits"
+        paused: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
     };
     try {
         const configDocRef = doc(db, "countdown", "config");
-        await updateDoc(configDocRef, defaultDoc);
+        await setDoc(configDocRef, defaultDoc);
         logMessage("Default document initialized successfully.", "success");
+        updateConnectionStatus(true);
     } catch (e) {
         logMessage("Initialization failed: " + e.message, "danger");
+        updateConnectionStatus(false);
     }
 }
 
@@ -177,7 +205,8 @@ saveChangesBtn.addEventListener("click", async () => {
             day,
             hour,
             minute,
-            second: second || 0
+            second: second || 0,
+            updatedAt: serverTimestamp()
         });
         logMessage("Countdown configuration saved.", "success");
     } catch (e) {
@@ -201,7 +230,9 @@ pauseBtn.addEventListener("click", async () => {
         const configDocRef = doc(db, "countdown", "config");
         await updateDoc(configDocRef, {
             status: "paused",
-            pausedRemaining: pausedRemaining
+            paused: true,
+            pausedRemaining: pausedRemaining,
+            updatedAt: serverTimestamp()
         });
         logMessage(`Countdown paused. Frozen at: ${formatDuration(pausedRemaining)}`, "warn");
     } catch (e) {
@@ -212,13 +243,13 @@ pauseBtn.addEventListener("click", async () => {
 // Action: Resume Countdown
 resumeBtn.addEventListener("click", async () => {
     if (isPlaceholder) return;
-    if (!activeConfig || activeConfig.status !== "paused") {
+    if (!activeConfig || !activeConfig.paused) {
         logMessage("Cannot resume: System is not paused.", "warn");
         return;
     }
 
     const now = new Date().getTime();
-    const newTargetTime = now + activeConfig.pausedRemaining;
+    const newTargetTime = now + (activeConfig.pausedRemaining || 0);
 
     // Calculate details in +05:30 offset
     const tzOffset = 5.5 * 60 * 60 * 1000;
@@ -241,7 +272,9 @@ resumeBtn.addEventListener("click", async () => {
             minute,
             second,
             status: "running",
-            pausedRemaining: 0
+            paused: false,
+            pausedRemaining: 0,
+            updatedAt: serverTimestamp()
         });
         logMessage("Countdown resumed.", "success");
     } catch (e) {
@@ -262,10 +295,48 @@ resetBtn.addEventListener("click", async () => {
             minute: 0,
             second: 0,
             status: "running",
+            paused: false,
             pausedRemaining: 0,
-            colorMode: "auto"
+            colorMode: "auto",
+            updatedAt: serverTimestamp()
         });
         logMessage("Countdown reset to default values (July 9, 2026 09:00:00).", "success");
+    } catch (e) {
+        logMessage("Action failed: " + e.message, "danger");
+    }
+});
+
+// Action: SET 24 HOUR COUNTDOWN
+set24hBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    
+    // Read local time
+    const now = new Date();
+    // Add exactly 24 hours
+    const targetTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    const year = targetTime.getFullYear();
+    const month = targetTime.getMonth() + 1;
+    const day = targetTime.getDate();
+    const hour = targetTime.getHours();
+    const minute = targetTime.getMinutes();
+    const second = targetTime.getSeconds();
+    
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            status: "running",
+            paused: false,
+            pausedRemaining: 0,
+            updatedAt: serverTimestamp()
+        });
+        logMessage(`Countdown target set to 24 hours from now (${year}-${month}-${day} ${hour}:${minute}:${second}).`, "success");
     } catch (e) {
         logMessage("Action failed: " + e.message, "danger");
     }
@@ -281,5 +352,21 @@ function formatDuration(ms) {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// Start setup
-setupDashboardListener();
+// Check on startup if config doc exists, then setup listener
+async function initController() {
+    if (isPlaceholder) return;
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        const snapshot = await getDoc(configDocRef);
+        if (!snapshot.exists()) {
+            logMessage("Document does not exist. Initializing...", "warn");
+            await initializeDefaultDoc();
+        }
+        setupDashboardListener();
+    } catch (e) {
+        logMessage("Failed to connect: " + e.message, "danger");
+        updateConnectionStatus(false);
+    }
+}
+
+initController();

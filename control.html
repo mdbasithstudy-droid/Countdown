@@ -75,6 +75,7 @@
                     </div>
 
                     <button id="saveChangesBtn" class="admin-btn">Save Changes</button>
+                    <button id="set24hBtn" class="admin-btn" style="background: rgba(0, 229, 255, 0.1); border-color: var(--neon-cyan); margin-top: 15px;">SET 24 HOUR COUNTDOWN</button>
                 </div>
 
                 <!-- RIGHT COLUMN: STATE DIRECTIVES -->
@@ -95,6 +96,11 @@
                 <div class="admin-log-entry success">> Control console initialized. Connecting to database...</div>
             </div>
         </main>
+    </div>
+
+    <!-- CONNECTION ERROR BANNER -->
+    <div id="connectionError" class="connection-lost-banner hidden">
+        <span class="warning-icon">⚠️</span> Realtime connection lost.
     </div>
 
     <!-- Scripts -->

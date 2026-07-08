@@ -1,9 +1,4 @@
-/**
- * ROBOCHIPX COUNTDOWN SYSTEM CONTROLLER
- * High-End Cybernetic HUD & Robotics Interface
- */
-
-import { db, doc, onSnapshot, isPlaceholder } from "./firebase.js";
+import { db, doc, onSnapshot, getDoc, setDoc, serverTimestamp, isPlaceholder } from "./firebase.js";
 
 // Default local configuration fallback if Firebase is not configured
 const FALLBACK_CONFIG = {
@@ -23,14 +18,64 @@ const FALLBACK_TARGET = new Date(
 let countdownState = {
     targetTime: FALLBACK_TARGET,
     status: "running",
+    paused: false,
     pausedRemaining: 0,
     colorMode: "auto",
     tagline: "Dive Beyond Limits"
 };
 
-// Realtime Firebase configuration sync
-if (!isPlaceholder) {
-    onSnapshot(doc(db, "countdown", "config"), (snapshot) => {
+// UI Connection status tracker
+function updateConnectionStatus(isConnected) {
+    const banner = document.getElementById("connectionError");
+    if (banner) {
+        if (isConnected) {
+            banner.classList.add("hidden");
+        } else {
+            banner.classList.remove("hidden");
+        }
+    }
+}
+
+// Browser connection status listeners
+window.addEventListener("online", () => updateConnectionStatus(true));
+window.addEventListener("offline", () => updateConnectionStatus(false));
+
+// Automatically initialize the Firestore document if it does not exist
+async function ensureFirestoreConfig() {
+    if (isPlaceholder) return;
+    const docRef = doc(db, "countdown", "config");
+    try {
+        const snapshot = await getDoc(docRef);
+        if (!snapshot.exists()) {
+            console.log("Config document does not exist in Firestore. Creating with defaults...");
+            await setDoc(docRef, {
+                year: 2026,
+                month: 7,
+                day: 9,
+                hour: 9,
+                minute: 0,
+                second: 0,
+                status: "running",
+                colorMode: "auto",
+                paused: false,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            });
+            console.log("Config document initialized successfully.");
+        }
+        updateConnectionStatus(true);
+    } catch (error) {
+        console.error("Error checking/creating config document: ", error);
+        updateConnectionStatus(false);
+    }
+}
+
+// Realtime sync listener with error fallback for offline connection loss message
+function startRealtimeSync() {
+    if (isPlaceholder) return;
+    const docRef = doc(db, "countdown", "config");
+    onSnapshot(docRef, (snapshot) => {
+        updateConnectionStatus(true);
         if (snapshot.exists()) {
             const data = snapshot.data();
             const year = data.year ?? FALLBACK_CONFIG.year;
@@ -47,6 +92,7 @@ if (!isPlaceholder) {
             countdownState = {
                 targetTime: targetTime,
                 status: data.status || "running",
+                paused: data.paused || false,
                 pausedRemaining: data.pausedRemaining || 0,
                 colorMode: data.colorMode || "auto",
                 tagline: data.tagline || "Dive Beyond Limits"
@@ -56,8 +102,12 @@ if (!isPlaceholder) {
         }
     }, (error) => {
         console.error("Firestore sync error: ", error);
+        updateConnectionStatus(false);
     });
 }
+
+// Call configuration setup and start sync listener
+ensureFirestoreConfig().then(startRealtimeSync);
 
 
 // Legacy local sync removed. Firebase real-time updates are used instead.

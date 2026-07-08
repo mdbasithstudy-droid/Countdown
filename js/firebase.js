@@ -1,6 +1,6 @@
 // firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -14,4 +14,4 @@ if (isPlaceholder) {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export { db, doc, onSnapshot, updateDoc, getDoc, isPlaceholder };
+export { db, doc, onSnapshot, updateDoc, getDoc, setDoc, serverTimestamp, isPlaceholder };

@@ -1,9 +1,9 @@
 // firebase-config.js
 export const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyCvxqgaOQFORXQTNEDDM6UNQ-t1P_X_f6s",
+    authDomain: "countdown-cae24.firebaseapp.com",
+    projectId: "countdown-cae24",
+    storageBucket: "countdown-cae24.firebasestorage.app",
+    messagingSenderId: "137713783796",
+    appId: "1:137713783796:web:082590c1fbb86af4221fa1"
 };
