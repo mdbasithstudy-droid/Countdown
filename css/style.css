@@ -90,6 +90,7 @@ body {
 .loader-logo-container {
     position: relative;
     width: 320px;
+    max-width: 85vw;
     height: 60px;
     margin-bottom: 2rem;
     border-radius: 8px;
@@ -108,6 +109,11 @@ body {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.75))
+            drop-shadow(0 0 6px rgba(0, 229, 255, 0.65))
+            drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
 }
 
 .loader-logo-scan {
@@ -372,6 +378,7 @@ body {
     font-family: 'Rajdhani', sans-serif;
     font-size: 1.4rem;
     font-weight: 600;
+    font-style: italic;
     letter-spacing: 2px;
     color: var(--text-white);
     text-transform: uppercase;
@@ -407,28 +414,32 @@ body {
     text-shadow: 0 1px 2px rgba(0,0,0,0.8);
 }
 
-.logo-wrapper {
+.logo-container {
     position: relative;
-    width: 350px;
-    max-width: 90%;
-    height: auto;
-    margin-bottom: 2rem;
-    padding: 8px;
-    border-radius: 12px;
-    background: rgba(10, 15, 26, 0.4);
-    border: 1px solid rgba(0, 229, 255, 0.15);
-    backdrop-filter: blur(4px);
-    box-shadow: var(--glow-cyan);
-    animation: float-animation 6s ease-in-out infinite;
+    width: 940px; /* Native resolution of the logo image */
+    max-width: 98vw;
+    margin: 0 auto 0.6rem auto; /* Center perfectly & reduce vertical gap to subtitle */
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
+    animation: float-animation 6s ease-in-out infinite;
 }
 
-.main-logo {
+.quantathon-logo {
+    display: block;
     width: 100%;
     height: auto;
+    max-width: 100%;
     object-fit: contain;
+    /* Native resolution display, prevent browser interpolation blur */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.75))         /* Very soft shadow */
+            drop-shadow(0 0 10px rgba(0, 229, 255, 0.65))      /* Subtle cyan glow */
+            drop-shadow(0 0 20px rgba(255, 255, 255, 0.45))     /* Soft white bloom */
+            drop-shadow(0 0 35px rgba(0, 136, 255, 0.35));     /* Slight blue ambient lighting */
+    -webkit-box-reflect: below -8px linear-gradient(transparent 65%, rgba(255, 255, 255, 0.12)); /* Slight reflection */
 }
 
 .glitch-title {
@@ -447,6 +458,7 @@ body {
     font-family: 'Rajdhani', sans-serif;
     font-size: 1.6rem;
     font-weight: 600;
+    font-style: italic;
     letter-spacing: 3px;
     color: var(--neon-cyan);
     text-transform: uppercase;
@@ -887,6 +899,11 @@ body {
         margin-bottom: 0.8rem;
     }
 
+    .logo-container {
+        width: 760px !important;
+        margin-bottom: 0.4rem !important;
+    }
+
     .quantathon-title {
         font-size: 2.1rem !important;
         letter-spacing: 3px !important;
@@ -956,13 +973,18 @@ body {
 }
 
 @media (max-width: 480px) {
+    .logo-container {
+        width: 520px !important;
+        margin-bottom: 0.3rem !important;
+    }
+
     .glitch-title {
         font-size: 2.2rem;
         letter-spacing: 3px;
     }
 
     .sub-title {
-        font-size: 1rem;
+        font-size: 0.85rem !important;
         letter-spacing: 1px;
     }
 
