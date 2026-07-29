@@ -4,7 +4,7 @@ import { db, doc, onSnapshot, getDoc, setDoc, serverTimestamp, isPlaceholder } f
 const FALLBACK_CONFIG = {
     year: 2026,
     month: 7,
-    day: 9,
+    day: 30,
     hour: 9,
     minute: 0,
     second: 0
@@ -21,7 +21,7 @@ let countdownState = {
     paused: false,
     pausedRemaining: 0,
     colorMode: "auto",
-    tagline: "Dive Beyond Limits"
+    tagline: "HACK THE FUTURE. POWER THE QUANTUM AGE."
 };
 
 // Low-end device detection (Aggressively targets 2GB-4GB RAM devices and mobile phones)
@@ -92,13 +92,14 @@ async function ensureFirestoreConfig() {
             await setDoc(docRef, {
                 year: 2026,
                 month: 7,
-                day: 9,
+                day: 30,
                 hour: 9,
                 minute: 0,
                 second: 0,
                 status: "running",
                 colorMode: "auto",
                 paused: false,
+                tagline: "HACK THE FUTURE. POWER THE QUANTUM AGE.",
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             });
@@ -136,7 +137,7 @@ function startRealtimeSync() {
                 paused: data.paused || false,
                 pausedRemaining: data.pausedRemaining || 0,
                 colorMode: data.colorMode || "auto",
-                tagline: data.tagline || "Dive Beyond Limits"
+                tagline: data.tagline || "HACK THE FUTURE. POWER THE QUANTUM AGE."
             };
 
             updateCountdown();
@@ -159,12 +160,12 @@ const terminalStatus = document.getElementById("terminalStatus");
 const appContainer = document.getElementById("appContainer");
 
 const loadingTasks = [
-    { text: "INITIALIZING AI CORE SYSTEM...", duration: 800 },
-    { text: "LOADING ROBOTICS MODULES...", duration: 800 },
-    { text: "CALIBRATING GYRO & SENSORS...", duration: 600 },
-    { text: "CONNECTING VLSI NETWORK...", duration: 900 },
-    { text: "MAPPING INTEGRATED CIRCUITS...", duration: 700 },
-    { text: "ESTABLISHING SECURE PROTOCOLS...", duration: 500 },
+    { text: "INITIALIZING QUANTUM AI CORE SYSTEM...", duration: 800 },
+    { text: "LOADING QUBIT REGISTERS...", duration: 800 },
+    { text: "CALIBRATING QUANTUM SENSORS...", duration: 600 },
+    { text: "CONNECTING NEURAL NETWORK...", duration: 900 },
+    { text: "MAPPING ENTANGLED PARTICLES...", duration: 700 },
+    { text: "ESTABLISHING CRYPTOGRAPHIC PROTOCOLS...", duration: 500 },
     { text: "SYSTEM READY", duration: 400 }
 ];
 
@@ -257,15 +258,28 @@ class Particle {
     reset() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.radius = Math.random() * 2 + 1;
-        this.color = Math.random() > 0.5 ? "rgba(0, 229, 255, 0.4)" : "rgba(0, 136, 255, 0.3)";
+        this.vx = (Math.random() - 0.5) * 0.45;
+        this.vy = (Math.random() - 0.5) * 0.45;
+        this.radius = Math.random() * 2.2 + 1.2;
+        const colorRand = Math.random();
+        if (colorRand > 0.75) {
+            this.color = "rgba(0, 229, 255, 0.5)"; // Bright Cyan
+        } else if (colorRand > 0.5) {
+            this.color = "rgba(0, 136, 255, 0.4)"; // Electric Blue
+        } else if (colorRand > 0.25) {
+            this.color = "rgba(139, 92, 246, 0.4)"; // Soft Purple
+        } else {
+            this.color = "rgba(255, 255, 255, 0.55)"; // Elegant White
+        }
+        this.isQubit = Math.random() > 0.85; // Flag for special quantum ring animation
+        this.angle = Math.random() * Math.PI * 2;
+        this.orbitSpeed = (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1);
     }
 
     update() {
         this.x += this.vx;
         this.y += this.vy;
+        this.angle += this.orbitSpeed;
 
         // Bounce back from boundaries
         if (this.x < 0 || this.x > width) this.vx *= -1;
@@ -290,6 +304,23 @@ class Particle {
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
+
+        // Draw quantum orbitals/spin rings for a subset of nodes (if not in performance mode)
+        if (this.isQubit && !isPerformanceMode) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 2.8, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.12)";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            // Orbiting dot
+            const ox = this.x + Math.cos(this.angle) * this.radius * 2.8;
+            const oy = this.y + Math.sin(this.angle) * this.radius * 2.8;
+            ctx.beginPath();
+            ctx.arc(ox, oy, 1, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(139, 92, 246, 0.6)";
+            ctx.fill();
+        }
     }
 }
 
@@ -421,6 +452,136 @@ for (let i = 0; i < traceCount; i++) {
     traces.push(new PCBTrace());
 }
 
+// Relates to: Large transparent AI robot face behind the countdown
+// Draws a futuristic cybernetic head wireframe
+function drawRobotFace(ctx, cx, cy) {
+    if (isPerformanceMode) return; // Keep performance perfect on low-end
+    
+    ctx.save();
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.08)"; // 8% opacity to not distract
+    ctx.lineWidth = 1;
+    ctx.shadowBlur = 0; // ensure no shadow slows it down
+    
+    // Scale face dynamically based on window size
+    const scale = Math.min(width, height) * 0.0016; 
+    
+    // Head Contour / Outer Skull
+    ctx.beginPath();
+    // Left hemisphere
+    ctx.moveTo(cx - 10 * scale, cy - 200 * scale);
+    ctx.bezierCurveTo(cx - 180 * scale, cy - 200 * scale, cx - 220 * scale, cy + 40 * scale, cx - 100 * scale, cy + 180 * scale);
+    ctx.lineTo(cx - 50 * scale, cy + 250 * scale);
+    ctx.lineTo(cx + 50 * scale, cy + 250 * scale);
+    // Right hemisphere
+    ctx.lineTo(cx + 100 * scale, cy + 180 * scale);
+    ctx.bezierCurveTo(cx + 220 * scale, cy + 40 * scale, cx + 180 * scale, cy - 200 * scale, cx + 10 * scale, cy - 200 * scale);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Forehead/Cortex panels
+    ctx.beginPath();
+    ctx.moveTo(cx - 60 * scale, cy - 200 * scale);
+    ctx.lineTo(cx - 40 * scale, cy - 120 * scale);
+    ctx.lineTo(cx + 40 * scale, cy - 120 * scale);
+    ctx.lineTo(cx + 60 * scale, cy - 200 * scale);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy - 160 * scale, 15 * scale, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Cybernetic Eyeglass Visor / Optics
+    ctx.beginPath();
+    ctx.moveTo(cx - 140 * scale, cy - 30 * scale);
+    ctx.lineTo(cx + 140 * scale, cy - 30 * scale);
+    ctx.lineTo(cx + 110 * scale, cy + 10 * scale);
+    ctx.lineTo(cx - 110 * scale, cy + 10 * scale);
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Visor details (lines inside)
+    ctx.beginPath();
+    ctx.moveTo(cx - 130 * scale, cy - 10 * scale);
+    ctx.lineTo(cx + 130 * scale, cy - 10 * scale);
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.12)";
+    ctx.stroke();
+    
+    // Cheek plates & contour lines
+    ctx.beginPath();
+    ctx.moveTo(cx - 150 * scale, cy + 30 * scale);
+    ctx.lineTo(cx - 90 * scale, cy + 110 * scale);
+    ctx.lineTo(cx - 90 * scale, cy + 180 * scale);
+    ctx.moveTo(cx + 150 * scale, cy + 30 * scale);
+    ctx.lineTo(cx + 90 * scale, cy + 110 * scale);
+    ctx.lineTo(cx + 90 * scale, cy + 180 * scale);
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.08)";
+    ctx.stroke();
+
+    // Jaw mechanics / Chin area
+    ctx.beginPath();
+    ctx.moveTo(cx - 50 * scale, cy + 210 * scale);
+    ctx.lineTo(cx - 30 * scale, cy + 250 * scale);
+    ctx.moveTo(cx + 50 * scale, cy + 210 * scale);
+    ctx.lineTo(cx + 30 * scale, cy + 250 * scale);
+    ctx.stroke();
+
+    // Nodes on facial landmarks (Neural network lines)
+    const landmarks = [
+        {x: cx, y: cy - 160 * scale},
+        {x: cx - 40 * scale, y: cy - 120 * scale},
+        {x: cx + 40 * scale, y: cy - 120 * scale},
+        {x: cx - 140 * scale, y: cy - 30 * scale},
+        {x: cx + 140 * scale, y: cy - 30 * scale},
+        {x: cx - 110 * scale, y: cy + 10 * scale},
+        {x: cx + 110 * scale, y: cy + 10 * scale},
+        {x: cx - 90 * scale, y: cy + 110 * scale},
+        {x: cx + 90 * scale, y: cy + 110 * scale},
+        {x: cx - 50 * scale, y: cy + 210 * scale},
+        {x: cx + 50 * scale, y: cy + 210 * scale}
+    ];
+
+    ctx.fillStyle = "rgba(0, 229, 255, 0.3)";
+    landmarks.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 3 * scale, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    ctx.restore();
+}
+
+let wavePhase = 0;
+// Draws undulating energy waves / digital wave patterns at the bottom
+function drawEnergyWaves(ctx, width, height) {
+    if (isPerformanceMode) return;
+    
+    ctx.save();
+    ctx.lineWidth = 1.2;
+    
+    // Wave 1 - Electric Cyan Wave
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0, 229, 255, 0.08)";
+    for (let x = 0; x < width; x += 15) {
+        let y = height * 0.85 + Math.sin(x * 0.002 + wavePhase) * 25 + Math.cos(x * 0.0015 + wavePhase * 0.5) * 10;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    
+    // Wave 2 - Deep Blue Wave
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0, 136, 255, 0.06)";
+    for (let x = 0; x < width; x += 15) {
+        let y = height * 0.87 + Math.sin(x * 0.0025 - wavePhase * 0.7) * 20 + Math.cos(x * 0.001 - wavePhase * 0.4) * 15;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    
+    ctx.restore();
+    wavePhase += 0.006;
+}
+
 // Viewport visibility flags for pausing off-screen animations
 let isCanvasVisible = true;
 let isCountdownVisible = true;
@@ -433,6 +594,10 @@ function animateBackground() {
     }
 
     ctx.clearRect(0, 0, width, height);
+
+    // Draw large AI face & undulating energy waves
+    drawRobotFace(ctx, width / 2, height * 0.45);
+    drawEnergyWaves(ctx, width, height);
 
     // Draw Traces
     traces.forEach((trace) => {
@@ -553,7 +718,7 @@ function updateCountdown() {
         // Auto Mode
         if (distance <= oneHour) {
             targetMode = "critical-mode";
-        } else if (distance <= twoHours) {
+        } else if (distance <= 6 * 60 * 60 * 1000) {
             targetMode = "warning-mode";
         } else {
             targetMode = "blue-mode";
@@ -571,12 +736,11 @@ function updateCountdown() {
         document.body.classList.add(targetMode);
     }
 
-    // Tagline management
-    if (!cachedTaglineEl) {
-        cachedTaglineEl = document.querySelector(".tagline");
-    }
     if (cachedTaglineEl) {
-        const targetTagline = countdownState.tagline || "Dive Beyond Limits";
+        let targetTagline = countdownState.tagline || "HACK THE FUTURE. POWER THE QUANTUM AGE.";
+        if (targetTagline === "36-Hour International Live Hackathon on Quantum Technology") {
+            targetTagline = "HACK THE FUTURE. POWER THE QUANTUM AGE.";
+        }
         if (cachedTaglineEl.textContent !== targetTagline) {
             cachedTaglineEl.textContent = targetTagline;
         }

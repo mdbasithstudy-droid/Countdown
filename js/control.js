@@ -25,14 +25,27 @@ class Particle {
     reset() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.radius = Math.random() * 2 + 1;
-        this.color = Math.random() > 0.5 ? "rgba(0, 229, 255, 0.4)" : "rgba(0, 136, 255, 0.3)";
+        this.vx = (Math.random() - 0.5) * 0.45;
+        this.vy = (Math.random() - 0.5) * 0.45;
+        this.radius = Math.random() * 2.2 + 1.2;
+        const colorRand = Math.random();
+        if (colorRand > 0.75) {
+            this.color = "rgba(0, 229, 255, 0.5)"; // Bright Cyan
+        } else if (colorRand > 0.5) {
+            this.color = "rgba(0, 136, 255, 0.4)"; // Electric Blue
+        } else if (colorRand > 0.25) {
+            this.color = "rgba(139, 92, 246, 0.4)"; // Soft Purple
+        } else {
+            this.color = "rgba(255, 255, 255, 0.55)"; // Elegant White
+        }
+        this.isQubit = Math.random() > 0.85;
+        this.angle = Math.random() * Math.PI * 2;
+        this.orbitSpeed = (Math.random() * 0.02 + 0.01) * (Math.random() > 0.5 ? 1 : -1);
     }
     update() {
         this.x += this.vx;
         this.y += this.vy;
+        this.angle += this.orbitSpeed;
         if (this.x < 0 || this.x > width) this.vx *= -1;
         if (this.y < 0 || this.y > height) this.vy *= -1;
     }
@@ -41,6 +54,21 @@ class Particle {
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
+
+        if (this.isQubit) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 2.8, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.12)";
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+
+            const ox = this.x + Math.cos(this.angle) * this.radius * 2.8;
+            const oy = this.y + Math.sin(this.angle) * this.radius * 2.8;
+            ctx.beginPath();
+            ctx.arc(ox, oy, 1, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(139, 92, 246, 0.6)";
+            ctx.fill();
+        }
     }
 }
 
@@ -118,6 +146,7 @@ const resumeBtn = document.getElementById("resumeBtn");
 const resetBtn = document.getElementById("resetBtn");
 const saveChangesBtn = document.getElementById("saveChangesBtn");
 const set24hBtn = document.getElementById("set24hBtn");
+const set36hBtn = document.getElementById("set36hBtn");
 
 let activeConfig = null;
 
@@ -146,13 +175,14 @@ async function initializeDefaultDoc() {
     const defaultDoc = {
         year: 2026,
         month: 7,
-        day: 9,
+        day: 30,
         hour: 9,
         minute: 0,
         second: 0,
         status: "running",
         colorMode: "auto",
         paused: false,
+        tagline: "36-Hour International Live Hackathon on Quantum Technology",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
     };
@@ -290,7 +320,7 @@ resetBtn.addEventListener("click", async () => {
         await updateDoc(configDocRef, {
             year: 2026,
             month: 7,
-            day: 9,
+            day: 30,
             hour: 9,
             minute: 0,
             second: 0,
@@ -298,9 +328,10 @@ resetBtn.addEventListener("click", async () => {
             paused: false,
             pausedRemaining: 0,
             colorMode: "auto",
+            tagline: "36-Hour International Live Hackathon on Quantum Technology",
             updatedAt: serverTimestamp()
         });
-        logMessage("Countdown reset to default values (July 9, 2026 09:00:00).", "success");
+        logMessage("Countdown reset to default values (July 30, 2026 09:00:00).", "success");
     } catch (e) {
         logMessage("Action failed: " + e.message, "danger");
     }
@@ -337,6 +368,42 @@ set24hBtn.addEventListener("click", async () => {
             updatedAt: serverTimestamp()
         });
         logMessage(`Countdown target set to 24 hours from now (${year}-${month}-${day} ${hour}:${minute}:${second}).`, "success");
+    } catch (e) {
+        logMessage("Action failed: " + e.message, "danger");
+    }
+});
+
+// Action: SET 36 HOUR COUNTDOWN
+set36hBtn.addEventListener("click", async () => {
+    if (isPlaceholder) return;
+    
+    // Read local time
+    const now = new Date();
+    // Add exactly 36 hours
+    const targetTime = new Date(now.getTime() + 36 * 60 * 60 * 1000);
+    
+    const year = targetTime.getFullYear();
+    const month = targetTime.getMonth() + 1;
+    const day = targetTime.getDate();
+    const hour = targetTime.getHours();
+    const minute = targetTime.getMinutes();
+    const second = targetTime.getSeconds();
+    
+    try {
+        const configDocRef = doc(db, "countdown", "config");
+        await updateDoc(configDocRef, {
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            status: "running",
+            paused: false,
+            pausedRemaining: 0,
+            updatedAt: serverTimestamp()
+        });
+        logMessage(`Countdown target set to 36 hours from now (${year}-${month}-${day} ${hour}:${minute}:${second}).`, "success");
     } catch (e) {
         logMessage("Action failed: " + e.message, "danger");
     }
@@ -387,6 +454,49 @@ document.querySelectorAll(".quick-btn").forEach(btn => {
     });
 });
 
+// Action: Quick Timer Buttons
+document.querySelectorAll(".quick-timer-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        if (isPlaceholder) return;
+        
+        let msToAdd = 0;
+        if (btn.dataset.timerHours) {
+            msToAdd = Number(btn.dataset.timerHours) * 60 * 60 * 1000;
+        } else {
+            return;
+        }
+        
+        const now = new Date();
+        const targetTime = new Date(now.getTime() + msToAdd);
+        
+        const year = targetTime.getFullYear();
+        const month = targetTime.getMonth() + 1;
+        const day = targetTime.getDate();
+        const hour = targetTime.getHours();
+        const minute = targetTime.getMinutes();
+        const second = targetTime.getSeconds();
+        
+        try {
+            const configDocRef = doc(db, "countdown", "config");
+            await updateDoc(configDocRef, {
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                status: "running",
+                paused: false,
+                pausedRemaining: 0,
+                updatedAt: serverTimestamp()
+            });
+            logMessage(`Quick timer set target to ${btn.textContent.trim()} from now (${year}-${month}-${day} ${hour}:${minute}:${second}).`, "success");
+        } catch (e) {
+            logMessage("Action failed: " + e.message, "danger");
+        }
+    });
+});
+
 // Action: Quick Action RESET
 const quickResetBtn = document.getElementById("quickResetBtn");
 if (quickResetBtn) {
@@ -397,7 +507,7 @@ if (quickResetBtn) {
             await updateDoc(configDocRef, {
                 year: 2026,
                 month: 7,
-                day: 9,
+                day: 30,
                 hour: 9,
                 minute: 0,
                 second: 0,
@@ -405,9 +515,10 @@ if (quickResetBtn) {
                 paused: false,
                 pausedRemaining: 0,
                 colorMode: "auto",
+                tagline: "36-Hour International Live Hackathon on Quantum Technology",
                 updatedAt: serverTimestamp()
             });
-            logMessage("Countdown reset to default values (July 9, 2026 09:00:00).", "success");
+            logMessage("Countdown reset to default values (July 30, 2026 09:00:00).", "success");
         } catch (e) {
             logMessage("Action failed: " + e.message, "danger");
         }
